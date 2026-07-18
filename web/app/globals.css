@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  /* Jeopardy board navy + gold */
+  --color-board: #0a0e2f;
+  --color-card: #131a4b;
+  --color-card2: #1b2360;
+  --color-line: #2a3373;
+  --color-gold: #f5c451;
+  --color-gold-dim: #caa53e;
+  --color-ink: #f4f5fb;
+  --color-ink2: #aab1d6;
+  --color-ink3: #7d84ad;
+  --color-up: #2fbf71;
+  --color-down: #e66767;
+
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-board);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* Native date input: keep the calendar icon visible on navy */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.85);
+}
