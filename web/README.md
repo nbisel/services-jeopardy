@@ -39,4 +39,4 @@ One-time import of historical scores from the old Google Sheet CSV:
 node scripts/import-csv.mjs path/to/export.csv
 ```
 
-The original Streamlit version lives in `app.py` at the repo root, kept as an archive.
+The original Streamlit version lives in the `app.py` file at the repo root, kept as an archive.
