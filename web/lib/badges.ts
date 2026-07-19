@@ -264,3 +264,13 @@ export function monthlyBadges(entries: Entry[], year: number, month: number): Ba
 
   return badges;
 }
+
+/**
+ * Solo Trivia's monthly badges — the same awards as the main game, computed
+ * from Solo Trivia's own (independent) scores. Wager Wizard is dropped because
+ * Solo Trivia has no Sunday-wager results (clue_scores is correct/incorrect/pass
+ * only), so that badge could never be awarded here.
+ */
+export function soloMonthlyBadges(entries: Entry[], year: number, month: number): Badge[] {
+  return monthlyBadges(entries, year, month).filter((b) => b.key !== "wager_wizard");
+}
