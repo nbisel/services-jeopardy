@@ -64,7 +64,8 @@ body {
   }
 }
 
-/* Native date input: keep the calendar icon visible on navy */
+/* Native date input: color-scheme:dark already renders the calendar icon
+   white on navy — an invert() filter would flip it back to black. */
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.85);
+  filter: none;
 }
