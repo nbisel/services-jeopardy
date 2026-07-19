@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const LINKS = [
   { href: "/", label: "Today" },
   { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/badges", label: "Badges" },
   { href: "/records", label: "Records" },
   { href: "/charts", label: "Charts" },
 ];
@@ -17,7 +18,7 @@ export default function Nav() {
       <div className="mx-auto flex w-full max-w-5xl items-center gap-1 px-4 py-3 sm:gap-4">
         <Link
           href="/"
-          className="mr-2 shrink-0 text-lg font-black italic tracking-wide text-gold sm:mr-4"
+          className="font-display mr-2 shrink-0 text-lg italic tracking-wide text-gold sm:mr-4"
         >
           SERVICES JEOPARDY!
         </Link>

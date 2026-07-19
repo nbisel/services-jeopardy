@@ -3,10 +3,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { upsertScore } from "@/lib/api";
 import type { Entry, Player } from "@/lib/types";
-import { computeAmount, dayValue, fmtMoney, isSunday, maxWager } from "@/lib/rules";
+import ResultControl, { type ResultPick } from "./ResultControl";
+import {
+  computeAmount,
+  dayValue,
+  fmtMoney,
+  isSunday,
+  maxWager,
+  weekdaysLoggedCount,
+} from "@/lib/rules";
 
-type Pick = "correct" | "incorrect" | "pass";
-type RowState = { pick: Pick | null; wager: number };
+type RowState = { pick: ResultPick | null; wager: number };
 
 export default function HostGrid({
   players,
@@ -28,26 +35,28 @@ export default function HostGrid({
     setMessage(null);
   }, [date]);
 
+  const active = useMemo(() => players.filter((p) => p.active), [players]);
   const sunday = isSunday(date);
   const value = dayValue(date);
 
   const info = useMemo(() => {
     const map = new Map<
       string,
-      { existing: Entry | undefined; locked: boolean; cap: number }
+      { existing: Entry | undefined; locked: boolean; cap: number; weekdaysLogged: number }
     >();
-    for (const p of players) {
+    for (const p of active) {
       const existing = entries.find((e) => e.player_id === p.id && e.date === date);
       map.set(p.id, {
         existing,
         locked: !!existing && existing.edit_count >= 1,
         cap: sunday ? maxWager(entries, p.id, date) : 0,
+        weekdaysLogged: sunday ? weekdaysLoggedCount(entries, p.id, date) : 6,
       });
     }
     return map;
-  }, [players, entries, date, sunday]);
+  }, [active, entries, date, sunday]);
 
-  function setPick(id: string, pick: Pick | null) {
+  function setPick(id: string, pick: ResultPick | null) {
     setRows((r) => ({ ...r, [id]: { wager: r[id]?.wager ?? 0, pick } }));
   }
   function setWager(id: string, wager: number) {
@@ -65,7 +74,7 @@ export default function HostGrid({
     return computeAmount(row.pick, value);
   }
 
-  const pending = players.filter((p) => {
+  const pending = active.filter((p) => {
     const st = info.get(p.id);
     const row = rows[p.id];
     if (!row?.pick || st?.locked) return false;
@@ -108,16 +117,7 @@ export default function HostGrid({
     onSaved();
   }
 
-  const seg = (selected: boolean, tone: "up" | "down" | "muted") => {
-    const tones = {
-      up: selected ? "bg-up text-board" : "text-up hover:bg-up/10",
-      down: selected ? "bg-down text-board" : "text-down hover:bg-down/10",
-      muted: selected ? "bg-ink3 text-board" : "text-ink2 hover:bg-ink3/10",
-    };
-    return `rounded-md px-3 py-1.5 text-sm font-bold transition-colors ${tones[tone]}`;
-  };
-
-  if (players.length === 0) {
+  if (active.length === 0) {
     return (
       <p className="text-sm text-ink2">
         No players yet — switch to “My Score” and add the first player.
@@ -128,7 +128,7 @@ export default function HostGrid({
   return (
     <div className="space-y-3">
       <div className="divide-y divide-line rounded-xl border border-line">
-        {players.map((p) => {
+        {active.map((p) => {
           const st = info.get(p.id)!;
           const row = rows[p.id];
           const amount = amountFor(p.id);
@@ -143,39 +143,25 @@ export default function HostGrid({
                       : `logged ${fmtMoney(st.existing.amount)} — resubmit replaces it`}
                   </div>
                 )}
+                {!st.locked && sunday && st.cap > 0 && st.weekdaysLogged < 6 && (
+                  <div className="text-xs text-gold">
+                    ⚠ only {st.weekdaysLogged} of 6 weekdays logged — the wager cap may be based
+                    on incomplete data
+                  </div>
+                )}
               </div>
 
               {st.locked ? (
                 <span className="text-xs text-ink3">edit used</span>
-              ) : sunday ? (
-                st.cap === 0 ? (
-                  <span className="text-xs text-ink3">no weekly total — can’t wager</span>
-                ) : (
-                  <>
-                    <input
-                      type="number"
-                      min={0}
-                      max={st.cap}
-                      placeholder="0"
-                      value={row?.wager || ""}
-                      onChange={(e) =>
-                        setWager(p.id, Math.max(0, Math.min(st.cap, Number(e.target.value) || 0)))
-                      }
-                      className="w-24 rounded-md border border-line bg-card2 px-2 py-1.5 text-sm"
-                    />
-                    <span className="text-xs text-ink3">max {fmtMoney(st.cap)}</span>
-                    <div className="flex gap-1">
-                      <button className={seg(row?.pick === "correct", "up")} onClick={() => setPick(p.id, "correct")}>✓</button>
-                      <button className={seg(row?.pick === "incorrect", "down")} onClick={() => setPick(p.id, "incorrect")}>✗</button>
-                    </div>
-                  </>
-                )
               ) : (
-                <div className="flex gap-1">
-                  <button className={seg(row?.pick === "correct", "up")} onClick={() => setPick(p.id, "correct")}>✓</button>
-                  <button className={seg(row?.pick === "incorrect", "down")} onClick={() => setPick(p.id, "incorrect")}>✗</button>
-                  <button className={seg(row?.pick === "pass", "muted")} onClick={() => setPick(p.id, "pass")}>Pass</button>
-                </div>
+                <ResultControl
+                  sunday={sunday}
+                  cap={st.cap}
+                  pick={row?.pick ?? null}
+                  wager={row?.wager ?? 0}
+                  onPick={(pick) => setPick(p.id, pick)}
+                  onWager={(w) => setWager(p.id, w)}
+                />
               )}
 
               <div className="w-20 text-right text-sm font-bold">

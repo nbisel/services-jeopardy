@@ -19,6 +19,7 @@ import {
 import { useScores } from "@/lib/useScores";
 import { raceData, wagerProfiles, weekdayWinRates } from "@/lib/stats";
 import { fmtMoney, todayStr } from "@/lib/rules";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 // Categorical slots validated against the navy card surface (dataviz skill);
 // assigned to players in fixed alphabetical order, never cycled.
@@ -63,7 +64,7 @@ export default function ChartsPage() {
   const weekdays = useMemo(() => weekdayWinRates(entries), [entries]);
   const wagers = useMemo(() => wagerProfiles(entries), [entries]);
 
-  if (loading) return <p className="text-center text-sm text-ink3">Loading charts…</p>;
+  if (loading) return <LoadingSpinner label="Loading charts" />;
   if (error) return <p className="text-center text-sm text-down">Couldn’t load data: {error}</p>;
   if (entries.length === 0)
     return <p className="text-center text-sm text-ink3">No scores yet — charts will appear once the games begin.</p>;

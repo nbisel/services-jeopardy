@@ -114,6 +114,25 @@ export function maxWager(entries: Entry[], playerId: string, date: string): numb
   return Math.abs(total);
 }
 
+/**
+ * How many of the week's six Mon–Sat dates (strictly before the given
+ * Sunday date) already have an entry for this player. Used to warn when
+ * a wager cap may be computed from an incomplete week.
+ */
+export function weekdaysLoggedCount(
+  entries: Entry[],
+  playerId: string,
+  date: string
+): number {
+  const start = weekStartStr(date);
+  const logged = new Set(
+    entries
+      .filter((e) => e.player_id === playerId && e.date >= start && e.date < date)
+      .map((e) => e.date)
+  );
+  return logged.size;
+}
+
 export function fmtMoney(n: number): string {
   const sign = n < 0 ? "-" : "";
   return `${sign}$${Math.abs(n).toLocaleString()}`;

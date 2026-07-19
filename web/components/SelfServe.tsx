@@ -10,6 +10,7 @@ import {
   fmtMoney,
   isSunday,
   maxWager,
+  weekdaysLoggedCount,
 } from "@/lib/rules";
 
 type Pick = "correct" | "incorrect" | "pass";
@@ -54,6 +55,10 @@ export default function SelfServe({
   const locked = !!existing && existing.edit_count >= 1;
   const cap = useMemo(
     () => (sunday && playerId ? maxWager(entries, playerId, date) : 0),
+    [sunday, playerId, entries, date]
+  );
+  const weekdaysLogged = useMemo(
+    () => (sunday && playerId ? weekdaysLoggedCount(entries, playerId, date) : 6),
     [sunday, playerId, entries, date]
   );
 
@@ -137,6 +142,12 @@ export default function SelfServe({
                 </p>
               ) : (
                 <div className="space-y-3">
+                  {weekdaysLogged < 6 && (
+                    <p className="rounded-md border border-gold/40 bg-gold/10 px-3 py-2 text-sm text-gold">
+                      ⚠ Only {weekdaysLogged} of 6 weekdays logged for this week — the wager cap
+                      may be based on incomplete data.
+                    </p>
+                  )}
                   <label className="block text-sm text-ink2">
                     Your wager (up to <span className="font-bold text-gold">{fmtMoney(cap)}</span>,
                     your weekly total)

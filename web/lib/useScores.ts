@@ -29,7 +29,7 @@ export function useScores() {
   const refetch = useCallback(async () => {
     try {
       const [p, s] = await Promise.all([
-        fetchAll<Player>("players", "id, name", "name"),
+        fetchAll<Player>("players", "id, name, active", "name"),
         fetchAll<Score>(
           "scores",
           "id, player_id, date, result, amount, wager, edit_count",

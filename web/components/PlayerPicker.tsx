@@ -76,11 +76,13 @@ export default function PlayerPicker({
             <option value="" disabled>
               Who are you?
             </option>
-            {players.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
+            {players
+              .filter((p) => p.active)
+              .map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
           </select>
           <button
             onClick={() => setAdding(true)}

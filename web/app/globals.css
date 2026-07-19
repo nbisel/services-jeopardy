@@ -15,6 +15,7 @@
   --color-down: #e66767;
 
   --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-anton), "Arial Narrow", sans-serif;
 }
 
 html {
@@ -22,9 +23,45 @@ html {
 }
 
 body {
+  /* Board-style backdrop: a soft glow near the top fading into the navy. */
   background-color: var(--color-board);
+  background-image: radial-gradient(
+    120% 600px at 50% 0%,
+    var(--color-card2) 0%,
+    var(--color-board) 100%
+  );
+  background-repeat: no-repeat;
   color: var(--color-ink);
   font-family: var(--font-sans);
+}
+
+/* Day-value reveal: the element is keyed by date, so changing the date
+   remounts it and replays the flip. */
+@keyframes day-flip {
+  from {
+    transform: perspective(600px) rotateX(90deg);
+    opacity: 0;
+  }
+  60% {
+    transform: perspective(600px) rotateX(-10deg);
+    opacity: 1;
+  }
+  to {
+    transform: perspective(600px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+.day-flip {
+  animation: day-flip 0.55s ease-out both;
+  transform-origin: 50% 100%;
+  backface-visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .day-flip {
+    animation: none;
+  }
 }
 
 /* Native date input: keep the calendar icon visible on navy */

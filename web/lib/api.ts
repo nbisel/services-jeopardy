@@ -44,7 +44,7 @@ export async function addPlayer(
   const { data, error } = await supabase
     .from("players")
     .insert({ name: trimmed })
-    .select("id, name")
+    .select("id, name, active")
     .single();
 
   if (error) {
@@ -54,4 +54,33 @@ export async function addPlayer(
     return { ok: false, error: `Could not add player: ${error.message}` };
   }
   return { ok: true, player: data };
+}
+
+export async function renamePlayer(id: string, newName: string): Promise<WriteResult> {
+  const trimmed = newName.trim();
+  if (!trimmed) return { ok: false, error: "Enter a name." };
+  if (trimmed.length > MAX_NAME_LENGTH) {
+    return { ok: false, error: `Names are capped at ${MAX_NAME_LENGTH} characters.` };
+  }
+
+  const { error } = await supabase.from("players").update({ name: trimmed }).eq("id", id);
+
+  if (error) {
+    if (error.code === "23505") {
+      return { ok: false, error: "Another player already has that name." };
+    }
+    return { ok: false, error: `Could not rename player: ${error.message}` };
+  }
+  return { ok: true };
+}
+
+export async function setPlayerActive(id: string, active: boolean): Promise<WriteResult> {
+  const { error } = await supabase.from("players").update({ active }).eq("id", id);
+  if (error) {
+    return {
+      ok: false,
+      error: `Could not ${active ? "restore" : "archive"} player: ${error.message}`,
+    };
+  }
+  return { ok: true };
 }

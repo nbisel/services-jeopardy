@@ -8,6 +8,7 @@ export type ResultCode =
 export type Player = {
   id: string;
   name: string;
+  active: boolean;
 };
 
 export type Score = {
