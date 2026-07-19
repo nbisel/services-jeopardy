@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isAnswerCorrect, levenshtein, normalizeAnswer } from "./grading";
+import { canonicalNumber, isAnswerCorrect, levenshtein, normalizeAnswer } from "./grading";
 
 describe("normalizeAnswer", () => {
   it("lowercases and trims", () => {
@@ -74,8 +74,52 @@ describe("isAnswerCorrect", () => {
     expect(isAnswerCorrect("Napolean", "Napoleon")).toBe(true); // transposition
     expect(isAnswerCorrect("Massachussets", "Massachusetts")).toBe(true); // long-word typos
   });
-  it("does not let the short-answer floor over-match distinct short words", () => {
-    // tolerance is 2 for short answers; "cat" vs "dog" is distance 3 → rejected
+});
+
+describe("canonicalNumber", () => {
+  it("canonicalizes numeric answers, ignoring separators and symbols", () => {
+    expect(canonicalNumber("1,000")).toBe("1000");
+    expect(canonicalNumber("$500")).toBe("500");
+    expect(canonicalNumber("50%")).toBe("50");
+    expect(canonicalNumber("2015.")).toBe("2015");
+    expect(canonicalNumber(" 007 ")).toBe("7");
+    expect(canonicalNumber("3.14")).toBe("3.14");
+    expect(canonicalNumber("-5")).toBe("-5");
+  });
+  it("returns null for non-numeric answers", () => {
+    expect(canonicalNumber("Paris")).toBeNull();
+    expect(canonicalNumber("Apollo 11")).toBeNull();
+    expect(canonicalNumber("")).toBeNull();
+  });
+});
+
+describe("isAnswerCorrect — numeric answers are exact", () => {
+  it("rejects a near-miss number (the whole point)", () => {
+    expect(isAnswerCorrect("2", "1")).toBe(false);
+    expect(isAnswerCorrect("41", "40")).toBe(false);
+    expect(isAnswerCorrect("2016", "2015")).toBe(false);
+    expect(isAnswerCorrect("501", "500")).toBe(false);
+  });
+  it("accepts the exact number", () => {
+    expect(isAnswerCorrect("1", "1")).toBe(true);
+    expect(isAnswerCorrect("40", "40")).toBe(true);
+  });
+  it("still ignores formatting noise on numbers", () => {
+    expect(isAnswerCorrect("1000", "1,000")).toBe(true);
+    expect(isAnswerCorrect("$500", "500")).toBe(true);
+    expect(isAnswerCorrect(" 40 ", "40")).toBe(true);
+  });
+  it("rejects a non-numeric guess at a numeric answer", () => {
+    expect(isAnswerCorrect("forty", "40")).toBe(false);
+    expect(isAnswerCorrect("", "40")).toBe(false);
+  });
+  it("leaves text answers on the fuzzy path", () => {
+    expect(isAnswerCorrect("Pariss", "Paris")).toBe(true);
+    // tolerance is 2 for short text answers; "cat" vs "dog" is distance 3
     expect(isAnswerCorrect("cat", "dog")).toBe(false);
+  });
+  it("keeps fuzz on answers that merely contain digits", () => {
+    // Not purely numeric, so the text path still applies.
+    expect(isAnswerCorrect("Apollo 11", "Apollo 11")).toBe(true);
   });
 });

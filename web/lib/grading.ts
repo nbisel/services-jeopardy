@@ -46,12 +46,36 @@ export function levenshtein(a: string, b: string): number {
   return prev[b.length];
 }
 
+// Separators/symbols that don't change a number's value.
+const NUMERIC_NOISE = /[,\s$%]/g;
+
 /**
- * True when the submitted answer matches the accepted answer after
- * normalization — either exactly, or within a small edit-distance tolerance
- * (the larger of 2 or 20% of the accepted answer's length).
+ * Canonical numeric form of an answer, or null if it isn't purely numeric.
+ * Tolerates thousands separators, currency/percent signs, and a trailing
+ * period, so "1,000" / "$500" / "2015." all canonicalize cleanly.
+ */
+export function canonicalNumber(s: string): string | null {
+  const t = (s ?? "").trim().replace(NUMERIC_NOISE, "").replace(/\.$/, "");
+  if (!/^-?\d+(?:\.\d+)?$/.test(t)) return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? String(n) : null;
+}
+
+/**
+ * True when the submitted answer matches the accepted answer.
+ *
+ * Numeric answers are graded EXACTLY — edit-distance tolerance is meaningless
+ * for numbers, where "2" is a completely different answer from "1" despite
+ * being one edit away. Everything else keeps the fuzzy match: an exact match
+ * after normalization, or within the larger of 2 edits or 20% of the accepted
+ * answer's length.
  */
 export function isAnswerCorrect(submitted: string, accepted: string): boolean {
+  const acceptedNum = canonicalNumber(accepted);
+  if (acceptedNum !== null) {
+    return canonicalNumber(submitted) === acceptedNum;
+  }
+
   const s = normalizeAnswer(submitted);
   const a = normalizeAnswer(accepted);
   if (!a || !s) return false;

@@ -83,7 +83,11 @@ async function main() {
       correct_answer: b64(r.correct_answer),
       difficulty: b64(r.difficulty),
     }))
-    .filter((r) => r.difficulty === "easy");
+    .filter((r) => r.difficulty === "easy")
+    // "Which of the following…" questions only make sense alongside the
+    // multiple-choice options, which this mode never shows — they're
+    // unanswerable as free text, so drop them before they reach the pool.
+    .filter((r) => !/which of/i.test(r.clue_text));
 
   // Dedupe within this pull, then against what's already stored.
   const byHash = new Map();
