@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import IntroAnimation from "@/components/IntroAnimation";
 import SelfServe from "@/components/SelfServe";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import HostGrid from "@/components/HostGrid";
@@ -68,6 +69,7 @@ export default function TodayPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
+      <IntroAnimation />
       {/* Day card */}
       <section className="rounded-2xl border border-line bg-card p-6 text-center shadow-lg">
         <input
