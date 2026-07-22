@@ -64,6 +64,46 @@ body {
   }
 }
 
+/* First-visit "This Is JEOPARDY" splash: each word zooms toward the
+   viewer, then the whole overlay fades to reveal the home screen. */
+@keyframes intro-word {
+  from {
+    transform: scale(0.25);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.intro-word {
+  animation: intro-word 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes intro-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.intro-fade-out {
+  animation: intro-fade-out 0.6s ease-in forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-word,
+  .intro-fade-out {
+    animation: none;
+  }
+}
+
 /* Native date input: color-scheme:dark already renders the calendar icon
    white on navy — an invert() filter would flip it back to black. */
 input[type="date"]::-webkit-calendar-picker-indicator {
