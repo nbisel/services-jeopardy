@@ -65,7 +65,7 @@ export default function SelfServe({
   const amount = sunday
     ? pick === "correct"
       ? Math.min(wager, cap)
-      : -Math.min(wager, cap)
+      : -Math.min(wager, cap) || 0
     : pick
       ? computeAmount(pick, value)
       : 0;
@@ -189,14 +189,11 @@ export default function SelfServe({
           {!locked && pick && (
             <button
               onClick={save}
-              disabled={busy || (sunday && wager === 0)}
+              disabled={busy}
               className="w-full rounded-xl bg-gold py-3 text-lg font-black text-board transition-opacity disabled:opacity-50"
             >
               {busy ? "Saving…" : `Save ${fmtMoney(amount)}`}
             </button>
-          )}
-          {sunday && pick && wager === 0 && !locked && (
-            <p className="text-center text-sm text-ink3">Set a wager above zero to save.</p>
           )}
 
           {message && (
